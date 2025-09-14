@@ -1,11 +1,51 @@
 plugins {
     id 'project-conventions'
+    id 'jacoco'
 }
 
 dependencies {
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "io.github.resilience4j:resilience4j-spring-boot3:2.2.0"
+    implementation "org.springframework.boot:spring-boot-starter-aop"
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'net.datafaker:datafaker:1.9.0'
+    testImplementation 'io.projectreactor:reactor-test'
 }
 
 springBoot {
     mainClass = 'com.reliaquest.api.ApiApplication'
 }
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+// Command::
+// ./gradlew clean test jacocoTestReport
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+}
+
+jacocoTestCoverageVerification {
+    dependsOn test
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.80.toBigDecimal()
+            }
+        }
+    }
+}
+
+check.dependsOn jacocoTestCoverageVerification
